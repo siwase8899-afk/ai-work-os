@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Wellness Coach</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f6f4ee;
+    --panel: #fffaf0;
+    --panel-2: #ebe4d7;
+    --ink: #232321;
+    --muted: #6e6a61;
+    --dim: #9a9388;
+    --line: #ddd5c8;
+    --green: #4d7659;
+    --blue: #3f6f87;
+    --gold: #b1843f;
+    --coral: #b96a5d;
+    --dark: #2f2e2b;
+    --good: #2f7d4d;
+    --warn: #b98232;
+    --risk: #b4534a;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 24px;
+  }
+  header {
+    align-items: flex-start;
+    display: flex;
+    gap: 18px;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  h1 { font-size: 1.65rem; letter-spacing: 0; line-height: 1.2; }
+  h2 {
+    border-left: 3px solid var(--green);
+    font-size: 1rem;
+    margin: 28px 0 12px;
+    padding-left: 10px;
+  }
+  h3 { font-size: 0.92rem; line-height: 1.35; }
+  p { color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
+  label {
+    color: var(--muted);
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  input, select, textarea {
+    background: #fffdf8;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.86rem;
+    min-height: 38px;
+    padding: 9px 10px;
+    width: 100%;
+  }
+  textarea { min-height: 76px; resize: vertical; }
+  button {
+    background: var(--green);
+    border: 0;
+    border-radius: 8px;
+    color: #fffaf0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 800;
+    min-height: 40px;
+    padding: 10px 14px;
+  }
+  button.secondary {
+    background: var(--panel-2);
+    color: var(--ink);
+  }
+  button.danger {
+    background: #f0d9d6;
+    color: var(--risk);
+  }
+  .subtitle { color: var(--muted); font-size: 0.88rem; margin-top: 7px; }
+  .home-link {
+    background: var(--dark);
+    border-radius: 999px;
+    color: #fffaf0;
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 9px 13px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(35, 35, 33, 0.06);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .panel.dark {
+    background: var(--dark);
+    color: #fffaf0;
+  }
+  .panel.dark p,
+  .panel.dark li { color: #ded6c8; }
+  .form-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .field-wide { grid-column: span 2; }
+  .kpi {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .kpi .label { color: var(--dim); font-size: 0.75rem; font-weight: 800; }
+  .kpi .value { font-size: 1.45rem; font-weight: 900; margin-top: 5px; }
+  .kpi .note { color: var(--muted); font-size: 0.74rem; margin-top: 3px; }
+  .status-good { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-risk { color: var(--risk); }
+  .meal-card {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 120px 1fr;
+  }
+  .photo-box {
+    align-items: center;
+    background: var(--panel-2);
+    border: 1px dashed #bfb4a4;
+    border-radius: 10px;
+    color: var(--muted);
+    display: flex;
+    font-size: 0.78rem;
+    justify-content: center;
+    min-height: 120px;
+    overflow: hidden;
+    text-align: center;
+  }
+  .photo-box img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+  .macro-bars {
+    display: grid;
+    gap: 9px;
+    margin-top: 10px;
+  }
+  .bar-row {
+    align-items: center;
+    display: grid;
+    gap: 9px;
+    grid-template-columns: 70px 1fr 54px;
+  }
+  .bar-label, .bar-value {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+  .bar-track {
+    background: var(--panel-2);
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    border-radius: 999px;
+    height: 100%;
+    min-width: 2px;
+  }
+  .fill-protein { background: var(--green); }
+  .fill-carbs { background: var(--gold); }
+  .fill-fat { background: var(--coral); }
+  .coach-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .coach-item {
+    background: rgba(255, 250, 240, 0.08);
+    border-left: 3px solid var(--green);
+    border-radius: 8px;
+    padding: 11px 12px;
+  }
+  .coach-item.warn { border-color: var(--warn); }
+  .coach-item.risk { border-color: var(--risk); }
+  .coach-item strong {
+    display: block;
+    font-size: 0.84rem;
+    margin-bottom: 3px;
+  }
+  .agent-flow {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .agent-step {
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 14px 12px;
+  }
+  .agent-step span {
+    color: var(--dim);
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .agent-step p {
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+  .disclaimer {
+    background: #f5e3df;
+    border: 1px solid #e5c4be;
+    border-radius: 10px;
+    color: #7e3f39;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    margin-top: 16px;
+    padding: 12px 14px;
+  }
+  canvas { max-height: 260px; width: 100% !important; }
+  @media (max-width: 980px) {
+    body { padding: 16px; }
+    header { flex-direction: column; }
+    .grid-2, .grid-3, .grid-4, .form-grid, .agent-flow { grid-template-columns: 1fr; }
+    .field-wide { grid-column: auto; }
+    .meal-card { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>AI Wellness Coach</h1>
+    <p class="subtitle">식단, 운동, 수면을 함께 보고 오늘의 컨디션과 다음 행동을 제안하는 개인 건강 운영 에이전트</p>
+  </div>
+  <a class="home-link" href="index.html">발표 슬라이드로 돌아가기</a>
+</header>
+
+<section class="panel">
+  <h3>내 기본 정보</h3>
+  <p style="margin:6px 0 14px;">프로필은 칼로리 목표와 피드백 기준을 잡기 위한 기본 정보입니다. 이 정보는 브라우저에만 저장됩니다.</p>
+  <div class="form-grid">
+    <div>
+      <label for="age">나이</label>
+      <input id="age" type="number" min="10" max="100" value="34">
+    </div>
+    <div>
+      <label for="height">키 cm</label>
+      <input id="height" type="number" min="120" max="220" value="165">
+    </div>
+    <div>
+      <label for="weight">몸무게 kg</label>
+      <input id="weight" type="number" min="35" max="180" value="58">
+    </div>
+    <div>
+      <label for="sex">기준</label>
+      <select id="sex">
+        <option value="female">여성</option>
+        <option value="male">남성</option>
+      </select>
+    </div>
+    <div>
+      <label for="activity">평소 활동량</label>
+      <select id="activity">
+        <option value="1.2">낮음</option>
+        <option value="1.375" selected>가벼운 활동</option>
+        <option value="1.55">보통</option>
+        <option value="1.725">높음</option>
+      </select>
+    </div>
+    <div>
+      <label for="goal">목표</label>
+      <select id="goal">
+        <option value="maintain">유지</option>
+        <option value="cut" selected>가볍게 감량</option>
+        <option value="gain">근육/체중 증가</option>
+      </select>
+    </div>
+    <div class="field-wide">
+      <label for="restrictions">알레르기 / 피해야 할 것</label>
+      <input id="restrictions" value="없음">
+    </div>
+    <div class="field-wide">
+      <label for="preferences">선호 음식 / 식사 스타일</label>
+      <input id="preferences" value="한식, 샐러드, 단백질 많은 식사">
+    </div>
+  </div>
+</section>
+
+<h2>오늘의 웰니스 요약</h2>
+<section class="grid grid-4">
+  <div class="kpi">
+    <div class="label">오늘 목표 칼로리</div>
+    <div class="value" id="targetCalories">-</div>
+    <div class="note">프로필과 목표 기준</div>
+  </div>
+  <div class="kpi">
+    <div class="label">기록된 섭취량</div>
+    <div class="value" id="eatenCalories">-</div>
+    <div class="note" id="calorieGap">아직 기록 없음</div>
+  </div>
+  <div class="kpi">
+    <div class="label">운동 / 회복</div>
+    <div class="value" id="exerciseSummary">-</div>
+    <div class="note" id="recoveryNote">운동 기록 대기</div>
+  </div>
+  <div class="kpi">
+    <div class="label">수면 상태</div>
+    <div class="value" id="sleepSummary">-</div>
+    <div class="note" id="sleepNote">수면 기록 대기</div>
+  </div>
+</section>
+
+<h2>식단 기록</h2>
+<section class="grid grid-3">
+  <div class="panel meal-card" data-meal="breakfast">
+    <div class="photo-box" id="preview-breakfast">아침 사진</div>
+    <div>
+      <h3>아침</h3>
+      <label>사진 업로드</label>
+      <input type="file" accept="image/*" data-photo="breakfast">
+      <label>먹은 음식</label>
+      <textarea id="breakfastText" placeholder="예: 현미밥 반 공기, 계란 2개, 김치, 아메리카노"></textarea>
+    </div>
+  </div>
+  <div class="panel meal-card" data-meal="lunch">
+    <div class="photo-box" id="preview-lunch">점심 사진</div>
+    <div>
+      <h3>점심</h3>
+      <label>사진 업로드</label>
+      <input type="file" accept="image/*" data-photo="lunch">
+      <label>먹은 음식</label>
+      <textarea id="lunchText" placeholder="예: 닭가슴살 샐러드, 고구마, 라떼"></textarea>
+    </div>
+  </div>
+  <div class="panel meal-card" data-meal="dinner">
+    <div class="photo-box" id="preview-dinner">저녁 사진</div>
+    <div>
+      <h3>저녁</h3>
+      <label>사진 업로드</label>
+      <input type="file" accept="image/*" data-photo="dinner">
+      <label>먹은 음식</label>
+      <textarea id="dinnerText" placeholder="예: 된장찌개, 밥, 생선구이, 나물"></textarea>
+    </div>
+  </div>
+</section>
+
+<h2>운동과 수면</h2>
+<section class="grid grid-2">
+  <div class="panel">
+    <h3>운동 기록</h3>
+    <div class="form-grid" style="margin-top:12px; grid-template-columns: repeat(2, minmax(0, 1fr));">
+      <div>
+        <label for="exerciseType">운동 종류</label>
+        <select id="exerciseType">
+          <option value="none">없음</option>
+          <option value="walk">걷기</option>
+          <option value="cardio">유산소</option>
+          <option value="strength">근력</option>
+          <option value="mixed">복합</option>
+        </select>
+      </div>
+      <div>
+        <label for="exerciseMinutes">운동 시간 분</label>
+        <input id="exerciseMinutes" type="number" min="0" max="300" value="0">
+      </div>
+      <div class="field-wide">
+        <label for="exerciseMemo">운동 메모</label>
+        <input id="exerciseMemo" placeholder="예: 하체 운동, 40분 산책">
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>수면 기록</h3>
+    <div class="form-grid" style="margin-top:12px; grid-template-columns: repeat(2, minmax(0, 1fr));">
+      <div>
+        <label for="sleepHours">수면 시간</label>
+        <input id="sleepHours" type="number" min="0" max="14" step="0.5" value="7">
+      </div>
+      <div>
+        <label for="sleepQuality">수면 질</label>
+        <select id="sleepQuality">
+          <option value="good">좋음</option>
+          <option value="normal" selected>보통</option>
+          <option value="poor">나쁨</option>
+        </select>
+      </div>
+      <div class="field-wide">
+        <label for="conditionMemo">오늘 컨디션</label>
+        <input id="conditionMemo" placeholder="예: 오후에 피곤함, 집중력 낮음">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="button-row" style="margin:18px 0 4px;">
+  <button id="analyzeBtn">오늘 상태 분석하기</button>
+  <button class="secondary" id="saveBtn">오늘 기록 저장</button>
+  <button class="danger" id="resetBtn">입력 초기화</button>
+</div>
+
+<h2>AI 코치 피드백</h2>
+<section class="grid grid-2">
+  <div class="panel dark">
+    <h3>오늘의 판단</h3>
+    <div class="coach-list" id="coachFeedback"></div>
+  </div>
+  <div class="panel">
+    <h3>탄단지 추정</h3>
+    <div class="macro-bars">
+      <div class="bar-row">
+        <div class="bar-label">단백질</div>
+        <div class="bar-track"><div class="bar-fill fill-protein" id="proteinBar"></div></div>
+        <div class="bar-value" id="proteinVal">0g</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">탄수화물</div>
+        <div class="bar-track"><div class="bar-fill fill-carbs" id="carbBar"></div></div>
+        <div class="bar-value" id="carbVal">0g</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">지방</div>
+        <div class="bar-track"><div class="bar-fill fill-fat" id="fatBar"></div></div>
+        <div class="bar-value" id="fatVal">0g</div>
+      </div>
+    </div>
+    <canvas id="macroChart"></canvas>
+  </div>
+</section>
+
+<h2>AI Wellness Coach 작동 방식</h2>
+<section class="agent-flow">
+  <div class="agent-step"><span>1단계</span><p>프로필과 목표를 입력한다</p></div>
+  <div class="agent-step"><span>2단계</span><p>식사 사진과 설명을 기록한다</p></div>
+  <div class="agent-step"><span>3단계</span><p>칼로리와 영양소를 추정한다</p></div>
+  <div class="agent-step"><span>4단계</span><p>운동·수면 상태를 함께 본다</p></div>
+  <div class="agent-step"><span>5단계</span><p>다음 식사와 행동을 제안한다</p></div>
+</section>
+
+<div class="disclaimer">
+  이 웹앱은 건강 루틴을 기록하고 식단 선택을 보조하기 위한 초안입니다. 의학적 진단, 치료, 약물, 질환 관리 조언을 제공하지 않으며, 건강 이상이나 특별한 식이 제한이 있는 경우 전문가 상담이 필요합니다.
+</div>
+
+<script>
+  var macroChart;
+
+  var foodMap = [
+    { keys: ['닭', '계란', '달걀', '두부', '생선', '참치', '연어', '고기', '소고기', '돼지', '단백질', '그릭'], kcal: 190, protein: 22, carbs: 2, fat: 8 },
+    { keys: ['밥', '현미', '고구마', '감자', '빵', '면', '파스타', '라면', '떡', '김밥'], kcal: 260, protein: 6, carbs: 52, fat: 3 },
+    { keys: ['샐러드', '채소', '나물', '브로콜리', '양배추', '토마토'], kcal: 80, protein: 3, carbs: 12, fat: 2 },
+    { keys: ['찌개', '국', '탕', '김치찌개', '된장찌개', '국밥'], kcal: 240, protein: 14, carbs: 18, fat: 12 },
+    { keys: ['라떼', '커피', '아메리카노', '음료', '주스'], kcal: 120, protein: 4, carbs: 18, fat: 4 },
+    { keys: ['과자', '케이크', '초콜릿', '디저트', '쿠키', '아이스크림'], kcal: 320, protein: 4, carbs: 42, fat: 16 },
+    { keys: ['과일', '사과', '바나나', '딸기', '블루베리'], kcal: 110, protein: 1, carbs: 28, fat: 0 },
+    { keys: ['견과', '아몬드', '호두', '땅콩'], kcal: 180, protein: 6, carbs: 6, fat: 16 }
+  ];
+
+  var fields = [
+    'age', 'height', 'weight', 'sex', 'activity', 'goal', 'restrictions', 'preferences',
+    'breakfastText', 'lunchText', 'dinnerText', 'exerciseType', 'exerciseMinutes',
+    'exerciseMemo', 'sleepHours', 'sleepQuality', 'conditionMemo'
+  ];
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadState();
+    bindEvents();
+    analyzeDay();
+  });
+
+  function bindEvents() {
+    fields.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', analyzeDay);
+      if (el) el.addEventListener('change', analyzeDay);
+    });
+    document.querySelectorAll('[data-photo]').forEach(function(input) {
+      input.addEventListener('change', handlePhoto);
+    });
+    document.getElementById('analyzeBtn').addEventListener('click', analyzeDay);
+    document.getElementById('saveBtn').addEventListener('click', saveState);
+    document.getElementById('resetBtn').addEventListener('click', resetInputs);
+  }
+
+  function getProfile() {
+    return {
+      age: numberValue('age', 34),
+      height: numberValue('height', 165),
+      weight: numberValue('weight', 58),
+      sex: document.getElementById('sex').value,
+      activity: numberValue('activity', 1.375),
+      goal: document.getElementById('goal').value
+    };
+  }
+
+  function numberValue(id, fallback) {
+    var n = parseFloat(document.getElementById(id).value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function calcTargetCalories(profile) {
+    var base = 10 * profile.weight + 6.25 * profile.height - 5 * profile.age;
+    var bmr = profile.sex === 'male' ? base + 5 : base - 161;
+    var tdee = bmr * profile.activity;
+    if (profile.goal === 'cut') tdee -= 250;
+    if (profile.goal === 'gain') tdee += 250;
+    return Math.max(1200, Math.round(tdee));
+  }
+
+  function estimateMeal(text) {
+    var normalized = (text || '').toLowerCase();
+    var total = { kcal: 0, protein: 0, carbs: 0, fat: 0, matched: [] };
+    foodMap.forEach(function(item) {
+      var hit = item.keys.some(function(key) { return normalized.indexOf(key.toLowerCase()) !== -1; });
+      if (hit) {
+        total.kcal += item.kcal;
+        total.protein += item.protein;
+        total.carbs += item.carbs;
+        total.fat += item.fat;
+        total.matched.push(item.keys[0]);
+      }
+    });
+    if (normalized.trim() && total.kcal === 0) {
+      total = { kcal: 420, protein: 16, carbs: 48, fat: 16, matched: ['직접 입력'] };
+    }
+    return total;
+  }
+
+  function aggregateMeals() {
+    var ids = ['breakfastText', 'lunchText', 'dinnerText'];
+    return ids.reduce(function(sum, id) {
+      var meal = estimateMeal(document.getElementById(id).value);
+      sum.kcal += meal.kcal;
+      sum.protein += meal.protein;
+      sum.carbs += meal.carbs;
+      sum.fat += meal.fat;
+      sum.matched = sum.matched.concat(meal.matched);
+      return sum;
+    }, { kcal: 0, protein: 0, carbs: 0, fat: 0, matched: [] });
+  }
+
+  function analyzeDay() {
+    var profile = getProfile();
+    var target = calcTargetCalories(profile);
+    var meals = aggregateMeals();
+    var exerciseType = document.getElementById('exerciseType').value;
+    var exerciseMinutes = numberValue('exerciseMinutes', 0);
+    var sleepHours = numberValue('sleepHours', 0);
+    var sleepQuality = document.getElementById('sleepQuality').value;
+    var proteinTarget = Math.round(profile.weight * (exerciseType === 'strength' || profile.goal === 'gain' ? 1.6 : 1.2));
+    var calorieGap = target - meals.kcal;
+    var feedback = buildFeedback({ profile, target, meals, calorieGap, exerciseType, exerciseMinutes, sleepHours, sleepQuality, proteinTarget });
+
+    document.getElementById('targetCalories').textContent = target.toLocaleString() + ' kcal';
+    document.getElementById('eatenCalories').textContent = meals.kcal.toLocaleString() + ' kcal';
+    document.getElementById('calorieGap').textContent = meals.kcal ? (calorieGap >= 0 ? '목표까지 ' + calorieGap.toLocaleString() + ' kcal 여유' : Math.abs(calorieGap).toLocaleString() + ' kcal 초과') : '아침, 점심, 저녁을 입력해 주세요';
+    document.getElementById('exerciseSummary').textContent = exerciseMinutes ? exerciseMinutes + '분' : '미기록';
+    document.getElementById('recoveryNote').textContent = exerciseMinutes >= 30 ? '운동 후 단백질과 수분 보충 권장' : '가벼운 산책 또는 스트레칭 추천';
+    document.getElementById('sleepSummary').textContent = sleepHours ? sleepHours + '시간' : '미기록';
+    document.getElementById('sleepNote').textContent = sleepHours < 6 ? '수면 부족, 카페인과 당 섭취 주의' : (sleepQuality === 'poor' ? '수면 질 낮음, 가벼운 식사 추천' : '수면 상태 안정권');
+
+    renderFeedback(feedback);
+    renderMacros(meals, proteinTarget);
+    saveState(true);
+  }
+
+  function buildFeedback(ctx) {
+    var items = [];
+    if (!ctx.meals.kcal) {
+      items.push({ level: 'warn', title: '식단 기록 대기', body: '오늘 먹은 음식을 한 줄씩만 적어도 칼로리와 탄단지 추정이 시작됩니다.' });
+      return items;
+    }
+    if (ctx.calorieGap > 500) {
+      items.push({ level: 'warn', title: '섭취량 부족 가능성', body: '목표 대비 섭취량이 낮습니다. 다음 식사는 단백질과 복합 탄수화물을 함께 챙기는 쪽이 좋습니다.' });
+    } else if (ctx.calorieGap < -250) {
+      items.push({ level: 'risk', title: '목표 칼로리 초과', body: '오늘은 추가 간식을 줄이고, 수분과 가벼운 움직임으로 마무리하는 쪽이 좋습니다.' });
+    } else {
+      items.push({ level: 'good', title: '칼로리 흐름 안정', body: '오늘 섭취량은 목표 범위에 가깝습니다. 다음 식사는 부족한 영양소 중심으로 맞추면 됩니다.' });
+    }
+    if (ctx.meals.protein < ctx.proteinTarget * 0.7) {
+      items.push({ level: 'warn', title: '단백질 보충 필요', body: '계란, 두부, 닭가슴살, 생선, 그릭요거트 같은 단백질 식품을 다음 식사에 추가해 보세요.' });
+    } else {
+      items.push({ level: 'good', title: '단백질 기록 양호', body: '현재 기록 기준 단백질 섭취가 나쁘지 않습니다. 운동한 날에는 수분까지 같이 챙기면 좋습니다.' });
+    }
+    if (ctx.exerciseMinutes >= 30 && ctx.meals.protein < ctx.proteinTarget) {
+      items.push({ level: 'warn', title: '운동 후 회복 식사', body: '운동 기록이 있으니 저녁이나 간식에 단백질과 수분을 보충하는 선택이 좋습니다.' });
+    }
+    if (ctx.sleepHours && ctx.sleepHours < 6) {
+      items.push({ level: 'risk', title: '수면 부족 반영', body: '수면이 부족한 날은 단 음식과 카페인이 당길 수 있습니다. 점심 이후 카페인과 고당류 간식을 조심하세요.' });
+    }
+    if (ctx.sleepQuality === 'poor') {
+      items.push({ level: 'warn', title: '수면 질 낮음', body: '오늘은 너무 무거운 저녁보다 따뜻한 국물, 단백질, 채소 중심의 식사가 컨디션 회복에 유리합니다.' });
+    }
+    items.push({ level: 'good', title: '다음 추천 행동', body: suggestNextAction(ctx) });
+    return items;
+  }
+
+  function suggestNextAction(ctx) {
+    var prefs = document.getElementById('preferences').value || '선호 음식';
+    if (ctx.meals.protein < ctx.proteinTarget * 0.7) return '다음 식사는 ' + prefs + ' 안에서 단백질 중심 메뉴를 고르세요. 예: 생선구이, 두부, 계란, 닭가슴살 샐러드.';
+    if (ctx.calorieGap < -250) return '오늘은 야식 대신 따뜻한 차, 물, 가벼운 산책으로 마무리하는 쪽이 좋습니다.';
+    if (ctx.sleepHours < 6) return '수면 부족 상태이므로 점심 이후 카페인을 줄이고, 저녁은 소화가 편한 메뉴로 가세요.';
+    return '남은 식사는 채소와 수분을 보충하고, 10분 이상 가볍게 움직이면 오늘 루틴이 안정적으로 마무리됩니다.';
+  }
+
+  function renderFeedback(items) {
+    var root = document.getElementById('coachFeedback');
+    root.innerHTML = items.map(function(item) {
+      var cls = item.level === 'risk' ? 'risk' : (item.level === 'warn' ? 'warn' : '');
+      return '<div class="coach-item ' + cls + '"><strong>' + item.title + '</strong><p>' + item.body + '</p></div>';
+    }).join('');
+  }
+
+  function renderMacros(meals, proteinTarget) {
+    var carbTarget = 220;
+    var fatTarget = 60;
+    setBar('protein', meals.protein, proteinTarget);
+    setBar('carb', meals.carbs, carbTarget);
+    setBar('fat', meals.fat, fatTarget);
+
+    var data = [meals.protein, meals.carbs, meals.fat];
+    var ctx = document.getElementById('macroChart');
+    if (macroChart) macroChart.destroy();
+    macroChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['단백질', '탄수화물', '지방'],
+        datasets: [{ data: data.map(function(v) { return Math.max(v, 1); }), backgroundColor: ['#4d7659', '#b1843f', '#b96a5d'], borderWidth: 0 }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom', labels: { color: '#6e6a61', font: { family: 'Pretendard' } } } },
+        cutout: '62%'
+      }
+    });
+  }
+
+  function setBar(kind, value, target) {
+    var width = Math.min(100, Math.round(value / target * 100));
+    document.getElementById(kind + 'Bar').style.width = width + '%';
+    document.getElementById(kind + 'Val').textContent = Math.round(value) + 'g';
+  }
+
+  function handlePhoto(event) {
+    var meal = event.target.dataset.photo;
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('preview-' + meal).innerHTML = '<img src="' + e.target.result + '" alt="' + meal + ' meal photo">';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function saveState(silent) {
+    var state = {};
+    fields.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) state[id] = el.value;
+    });
+    localStorage.setItem('wellnessCoachState', JSON.stringify(state));
+    if (!silent) alert('오늘 기록을 브라우저에 저장했어요.');
+  }
+
+  function loadState() {
+    try {
+      var state = JSON.parse(localStorage.getItem('wellnessCoachState') || '{}');
+      Object.keys(state).forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = state[id];
+      });
+    } catch (e) {
+      console.warn('저장된 상태를 불러오지 못했습니다.', e);
+    }
+  }
+
+  function resetInputs() {
+    ['breakfastText', 'lunchText', 'dinnerText', 'exerciseMemo', 'conditionMemo'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('exerciseType').value = 'none';
+    document.getElementById('exerciseMinutes').value = '0';
+    document.querySelectorAll('.photo-box').forEach(function(box) {
+      box.textContent = box.id.indexOf('breakfast') !== -1 ? '아침 사진' : (box.id.indexOf('lunch') !== -1 ? '점심 사진' : '저녁 사진');
+    });
+    analyzeDay();
+  }
+</script>
+</body>
+</html>

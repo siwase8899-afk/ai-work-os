@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Work OS</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg: #f7f5ef;
+    --ink: #232323;
+    --muted: #6d675f;
+    --soft: #9a9287;
+    --line: #ded8cd;
+    --panel: #ede8dc;
+    --panel-2: #e7dfd1;
+    --dark: #2f2c29;
+    --accent: #8a5f3d;
+    --blue: #2f536d;
+    --green: #55705a;
+    --gold: #ad8241;
+    --red: #925f5f;
+    --white: #fffaf1;
+    --r-background-color: var(--bg);
+    --r-main-font: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    --r-heading-font: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    --r-main-color: var(--ink);
+    --r-heading-color: var(--ink);
+    --r-main-font-size: 30px;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); }
+  .reveal { font-weight: 400; }
+  .reveal .slides { text-align: left; }
+  .reveal section {
+    height: 100%;
+    overflow: hidden;
+    padding: 88px 64px 44px !important;
+    text-align: left;
+  }
+  .reveal h1 {
+    font-size: 2.22em;
+    font-weight: 780;
+    letter-spacing: 0;
+    line-height: 1.16;
+    margin: 0;
+  }
+  .reveal h2 {
+    font-size: 1.35em;
+    font-weight: 760;
+    letter-spacing: 0;
+    line-height: 1.25;
+    margin: 0 0 18px;
+  }
+  .reveal h3 {
+    font-size: 0.64em;
+    font-weight: 730;
+    letter-spacing: 0;
+    line-height: 1.35;
+    margin: 0;
+  }
+  .reveal p {
+    color: var(--muted);
+    font-size: 0.56em;
+    line-height: 1.62;
+    margin: 0;
+  }
+  .reveal ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .reveal li {
+    color: var(--muted);
+    font-size: 0.52em;
+    line-height: 1.55;
+    margin: 0;
+    padding-left: 14px;
+    position: relative;
+  }
+  .reveal li::before {
+    background: var(--soft);
+    border-radius: 50%;
+    content: "";
+    height: 4px;
+    left: 0;
+    position: absolute;
+    top: 11px;
+    width: 4px;
+  }
+  .reveal .controls { color: var(--accent); }
+  .reveal .progress { display: none; }
+  .reveal .slide-number {
+    color: var(--soft);
+    font-family: 'Pretendard', sans-serif;
+    font-size: 11px;
+  }
+
+  #top-tabs {
+    align-items: center;
+    background: rgba(247, 245, 239, 0.94);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 8px;
+    height: 56px;
+    left: 0;
+    padding: 0 22px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 50;
+  }
+  .brand-tab {
+    color: var(--accent);
+    font-family: 'Pretendard', sans-serif;
+    font-size: 13px;
+    font-weight: 820;
+    letter-spacing: 0;
+    margin-right: 12px;
+    white-space: nowrap;
+  }
+  .nav-tab {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 12px;
+    font-weight: 720;
+    height: 34px;
+    padding: 0 12px;
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+  }
+  .nav-tab:hover {
+    background: var(--panel);
+    color: var(--ink);
+  }
+  .nav-tab.active {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: var(--white);
+  }
+
+  .label {
+    color: var(--accent);
+    font-size: 0.42em;
+    font-weight: 760;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .lead {
+    color: var(--muted);
+    font-size: 0.66em !important;
+    line-height: 1.56 !important;
+    margin-top: 18px !important;
+    max-width: 820px;
+  }
+  .bold { color: var(--ink); font-weight: 760; }
+  .accent { color: var(--accent); }
+  .blue { color: var(--blue); }
+  .green { color: var(--green); }
+  .gold { color: var(--gold); }
+  .red { color: var(--red); }
+  .dim { color: var(--soft); }
+
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  .hero {
+    align-items: center;
+    display: grid;
+    gap: 42px;
+    grid-template-columns: 1.12fr 0.88fr;
+    height: 100%;
+  }
+  .hero-panel {
+    background: var(--dark);
+    border-radius: 8px;
+    color: var(--white);
+    padding: 28px;
+  }
+  .hero-panel h3 { color: var(--white); }
+  .hero-panel p { color: #ddd4c6; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid rgba(35, 35, 35, 0.05);
+    border-radius: 8px;
+    min-height: 0;
+    padding: 18px 20px;
+  }
+  .card > * + * { margin-top: 10px; }
+  .dark-card {
+    background: var(--dark);
+    color: var(--white);
+  }
+  .dark-card h3 { color: var(--white); }
+  .dark-card p,
+  .dark-card li { color: #ddd4c6; }
+  .dark-card .tag,
+  .common-row .tag {
+    background: rgba(255, 250, 241, 0.13);
+    color: var(--white);
+  }
+
+  .tag {
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 0.38em;
+    font-weight: 760;
+    padding: 4px 9px;
+  }
+  .tag-brown { background: rgba(138, 95, 61, 0.12); color: var(--accent); }
+  .tag-blue { background: rgba(47, 83, 109, 0.12); color: var(--blue); }
+  .tag-green { background: rgba(85, 112, 90, 0.13); color: var(--green); }
+  .tag-gold { background: rgba(173, 130, 65, 0.15); color: var(--gold); }
+  .tag-red { background: rgba(146, 95, 95, 0.13); color: var(--red); }
+
+  .system-map {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 22px;
+  }
+  .lane {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .lane h3 { margin-bottom: 12px; }
+  .mini-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 14px;
+  }
+  .mini {
+    background: rgba(255, 250, 241, 0.68);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.43em;
+    font-weight: 700;
+    padding: 9px 10px;
+    text-align: center;
+  }
+  .common-row {
+    background: var(--dark);
+    border-radius: 8px;
+    color: var(--white);
+    grid-column: 1 / -1;
+    padding: 20px 22px;
+  }
+  .common-row h3 { color: var(--white); }
+  .common-row p { color: #ddd4c6; }
+
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 184px;
+    text-decoration: none;
+  }
+  .project-card[href] { cursor: pointer; }
+  .project-card[href]:hover {
+    border-color: rgba(138, 95, 61, 0.38);
+    transform: translateY(-1px);
+  }
+  .project-meta {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .status {
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.36em;
+    font-weight: 760;
+    padding: 4px 9px;
+  }
+  .status-live { background: rgba(85, 112, 90, 0.16); color: var(--green); }
+  .status-plan { background: rgba(173, 130, 65, 0.15); color: var(--gold); }
+  .status-use { background: rgba(47, 83, 109, 0.13); color: var(--blue); }
+
+  .flow {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-top: 20px;
+  }
+  .flow-step {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .flow-step span {
+    color: var(--soft);
+    display: block;
+    font-size: 0.36em;
+    font-weight: 760;
+    margin-bottom: 7px;
+  }
+  .flow-step p {
+    color: var(--ink);
+    font-size: 0.45em;
+    font-weight: 760;
+    line-height: 1.32;
+  }
+
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .link-button {
+    background: var(--accent);
+    border-radius: 6px;
+    color: var(--white) !important;
+    display: inline-block;
+    font-size: 0.46em;
+    font-weight: 780;
+    padding: 10px 14px;
+    text-decoration: none;
+  }
+  .link-button.secondary {
+    background: var(--panel-2);
+    color: var(--accent) !important;
+  }
+
+  @media (max-width: 900px) {
+    #top-tabs { overflow-x: auto; padding: 0 12px; }
+    .brand-tab { font-size: 12px; }
+    .nav-tab { flex: 0 0 auto; }
+    .reveal section { padding: 78px 28px 42px !important; }
+    .hero,
+    .system-map,
+    .grid-2,
+    .grid-3,
+    .grid-4 { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .mini-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<nav id="top-tabs" aria-label="발표 챕터">
+  <div class="brand-tab">AI Work OS</div>
+  <button class="nav-tab" data-slide="0">Overview</button>
+  <button class="nav-tab" data-slide="2">Company</button>
+  <button class="nav-tab" data-slide="3">Personal</button>
+  <button class="nav-tab" data-slide="4">Daily Ops</button>
+  <button class="nav-tab" data-slide="5">Projects</button>
+  <button class="nav-tab" data-slide="9">Roadmap</button>
+</nav>
+
+<div class="reveal">
+<div class="slides">
+
+<section>
+  <div class="hero">
+    <div>
+      <div class="label">Smart Work Separation</div>
+      <h1>회사 업무와 개인 업무를<br>분리하고 자동화하는<br><span class="accent">AI Work OS</span></h1>
+      <p class="lead">언제 어디서든 업무, 일정, 리포트, 대시보드를 확인하고 반복 업무는 AI가 먼저 정리해주는 개인 운영 시스템을 만든다.</p>
+      <div class="button-row">
+        <a class="link-button" href="#/5">프로젝트 허브 보기</a>
+      </div>
+    </div>
+    <div class="hero-panel">
+      <h3>발표의 핵심 메시지</h3>
+      <p>AI를 단순한 답변 도구가 아니라, 회사와 개인의 일을 분리하고 매일의 실행을 보조하는 운영 파트너로 설계한다.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">System Overview</div>
+  <h2>분리하되, 공통 운영은 하나로 본다</h2>
+  <p>회사 업무와 개인 업무는 데이터와 목적이 다르다. 하지만 일정, 알림, 기록, 리포트처럼 매일의 실행을 돕는 기능은 공통 운영 레이어로 관리한다.</p>
+  <div class="system-map">
+    <div class="lane">
+      <span class="tag tag-blue">Company Work</span>
+      <h3>회사 업무</h3>
+      <p>책임, 보안, 협업, 마감이 중요한 영역이다.</p>
+      <div class="mini-grid">
+        <div class="mini">자동화</div>
+        <div class="mini">리포트</div>
+        <div class="mini">대시보드</div>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="tag tag-green">Personal Work</span>
+      <h3>개인 업무</h3>
+      <p>생활 루틴, 학습, 재무, 건강을 꾸준히 관리하는 영역이다.</p>
+      <div class="mini-grid">
+        <div class="mini">자동화</div>
+        <div class="mini">리포트</div>
+        <div class="mini">대시보드</div>
+      </div>
+    </div>
+    <div class="common-row">
+      <h3>공통 운영 레이어</h3>
+      <p>일정, 날씨, OOTD, 알림, 하루 브리핑, 지출 기록처럼 회사와 개인의 하루 운영에 함께 쓰이는 기능을 한 시스템에서 확인한다.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Company Work</div>
+  <h2>회사 업무 영역</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <span class="tag tag-blue">Content</span>
+      <h3>콘텐츠 업무</h3>
+      <ul>
+        <li>콘텐츠 일정 관리</li>
+        <li>아이디어와 소재 정리</li>
+        <li>성과 리포트 자동화</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-gold">Branch</span>
+      <h3>지사 관리</h3>
+      <ul>
+        <li>지사별 요청사항 정리</li>
+        <li>이슈와 후속 조치 추적</li>
+        <li>월간 리포트 생성</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-green">Report</span>
+      <h3>보고서 / 회의록</h3>
+      <ul>
+        <li>회의 요약</li>
+        <li>액션 아이템 추출</li>
+        <li>보고서 초안 작성</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-red">Customer</span>
+      <h3>고객 응대</h3>
+      <ul>
+        <li>문의 유형 분류</li>
+        <li>응대 초안 작성</li>
+        <li>확인 필요 건 표시</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-brown">Research</span>
+      <h3>리서치 / 데이터 분석</h3>
+      <ul>
+        <li>자료 조사 요약</li>
+        <li>데이터 흐름 시각화</li>
+        <li>의사결정 포인트 정리</li>
+      </ul>
+    </div>
+    <div class="card dark-card">
+      <h3>운영 원칙</h3>
+      <p>회사 데이터는 개인 데이터와 분리하고, 외부 발송과 최종 결정은 반드시 사람이 승인한다.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Personal Work</div>
+  <h2>개인 업무 영역</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <span class="tag tag-gold">Portfolio</span>
+      <h3>재테크 / 주식 종목 관리</h3>
+      <ul>
+        <li>보유 종목 현재가 확인</li>
+        <li>수익률 부진 종목 업데이트</li>
+        <li>뉴스와 지표 요약</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-green">Health</span>
+      <h3>AI Wellness Coach</h3>
+      <ul>
+        <li>음식 사진과 식단 기록</li>
+        <li>운동과 수면 상태 연결</li>
+        <li>하루 컨디션 피드백 제공</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-blue">English</span>
+      <h3>영어 학습</h3>
+      <ul>
+        <li>영상 채널 링크 추천</li>
+        <li>요약, 단어, 표현 정리</li>
+        <li>복습 질문 생성</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-red">Finance</span>
+      <h3>가계부 / 지출 기록</h3>
+      <ul>
+        <li>자연어 지출 입력</li>
+        <li>카테고리 자동 분류</li>
+        <li>엑셀 정리와 월간 요약</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-brown">Growth</span>
+      <h3>학습 / 자기 계발</h3>
+      <ul>
+        <li>목표 분해</li>
+        <li>실행률 점검</li>
+        <li>주간 회고 리포트</li>
+      </ul>
+    </div>
+    <div class="card dark-card">
+      <h3>운영 원칙</h3>
+      <p>개인 업무는 AI가 루틴을 유지하게 돕고, 장기 목표가 흐려지지 않게 매일 작게 업데이트한다.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Daily Ops</div>
+  <h2>클로드코드로 전환해 운영할 공통 루틴</h2>
+  <p>클로드코드는 매일 반복되는 확인과 정리를 맡는 개인 운영 에이전트로 확장한다. 발표에서는 “AI를 실제 생활과 업무 운영에 어떻게 연결하는가”를 보여주는 사례가 된다.</p>
+  <div class="grid grid-4" style="margin-top:20px;">
+    <div class="card">
+      <span class="tag tag-blue">Morning</span>
+      <h3>일정 + 날씨 + OOTD</h3>
+      <p>오늘 날씨를 내일 날씨와 비교하고, 근무 환경과 그날의 일정에 맞는 OOTD를 제안한다.</p>
+    </div>
+    <div class="card">
+      <span class="tag tag-green">English</span>
+      <h3>매일 영어 콘텐츠</h3>
+      <p>영상 링크, 요약, 단어, 표현, 질문을 묶어 하루 학습 콘텐츠로 만든다.</p>
+    </div>
+    <div class="card">
+      <span class="tag tag-gold">Market</span>
+      <h3>장 마감 후 포트폴리오 점검</h3>
+      <p>보유 종목 중 수익률이 좋지 않은 종목을 업데이트하고 확인할 포인트를 정리한다.</p>
+    </div>
+    <div class="card">
+      <span class="tag tag-red">Expense</span>
+      <h3>자연어 지출 기록</h3>
+      <p>“오늘 커피 6,300원”처럼 말하면 항목을 분류해 엑셀로 정리한다.</p>
+    </div>
+    <div class="card">
+      <span class="tag tag-brown">Food</span>
+      <h3>맛집 추천</h3>
+      <p>맛집 리스트와 위치를 바탕으로, 지금 먹고 싶은 메뉴나 상황에 맞는 장소를 추천한다.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Project Hub</div>
+  <h2>앞으로 디벨롭할 프로젝트를 한 번에 본다</h2>
+  <div class="grid grid-3">
+    <a class="card project-card" href="stock-dashboard.html" target="_blank">
+      <div class="project-meta">
+        <span class="tag tag-gold">Personal</span>
+        <span class="status status-live">구현 중</span>
+      </div>
+      <h3>주식 종목 관리 대시보드</h3>
+      <p>보유량, 매입가, 현재가, 수익률, 환율, 뉴스, 기술 지표를 한 화면에서 확인한다.</p>
+    </a>
+    <a class="card project-card" href="wellness-coach.html" target="_blank">
+      <div class="project-meta">
+        <span class="tag tag-green">Personal</span>
+        <span class="status status-live">초안 구현</span>
+      </div>
+      <h3>AI Wellness Coach</h3>
+      <p>식단, 운동, 수면 데이터를 함께 분석해 오늘의 컨디션과 다음 행동을 제안한다. 현재 초안 웹앱으로 연결된다.</p>
+    </a>
+    <a class="card project-card" href="#/8">
+      <div class="project-meta">
+        <span class="tag tag-blue">Company</span>
+        <span class="status status-plan">기획</span>
+      </div>
+      <h3>지사 관리 리포트</h3>
+      <p>지사별 이슈, 성과, 요청사항, 다음 액션을 자동 리포트로 만든다.</p>
+    </a>
+    <a class="card project-card" href="#/8">
+      <div class="project-meta">
+        <span class="tag tag-brown">Company</span>
+        <span class="status status-plan">기획</span>
+      </div>
+      <h3>콘텐츠 업무 대시보드</h3>
+      <p>콘텐츠 발행 일정, 채널별 성과, 다음 제작 우선순위를 관리한다.</p>
+    </a>
+    <div class="card project-card">
+      <div class="project-meta">
+        <span class="tag tag-blue">Common</span>
+        <span class="status status-use">사용 중</span>
+      </div>
+      <h3>일정 / 날씨 / OOTD 브리핑</h3>
+      <p>클로드코드를 통해 하루 운영에 필요한 정보를 먼저 받아본다. 이후 보유 의류 데이터와 연결해 OOTD를 고도화한다.</p>
+    </div>
+    <div class="card project-card">
+      <div class="project-meta">
+        <span class="tag tag-red">Personal</span>
+        <span class="status status-plan">기획</span>
+      </div>
+      <h3>가계부 자동 정리</h3>
+      <p>자연어로 말한 소비 내용을 엑셀 데이터와 월간 리포트로 변환한다.</p>
+    </div>
+    <div class="card project-card">
+      <div class="project-meta">
+        <span class="tag tag-brown">Common</span>
+        <span class="status status-use">사용 중</span>
+      </div>
+      <h3>맛집 추천 에이전트</h3>
+      <p>맛집 후보, 위치, 기분, 메뉴 선호를 조합해 오늘 갈 만한 곳을 추천한다.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label">Project 01</div>
+  <h2>주식 종목 관리 대시보드</h2>
+  <p>첫 번째 구현 프로젝트는 개인 업무 중 재테크 영역이다. 투자 판단을 대신하는 것이 아니라, 판단 전에 확인해야 할 정보를 자동으로 모아주는 구조다.</p>
+  <div class="grid grid-3" style="margin-top:20px;">
+    <div class="card">
+      <span class="tag tag-blue">Market</span>
+      <h3>시장 시황</h3>
+      <ul>
+        <li>KOSPI, KOSDAQ, 미국 주요 지수</li>
+        <li>VIX, 원달러, 엔화, 미국 10년 금리</li>
+        <li>최근 흐름 차트</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-green">Portfolio</span>
+      <h3>내 포트폴리오</h3>
+      <ul>
+        <li>보유량, 매입가, 현재가</li>
+        <li>평가금액, 손익, 수익률</li>
+        <li>RSI, MA20, MA60</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-red">News</span>
+      <h3>관련 뉴스</h3>
+      <ul>
+        <li>실제 원문 링크 연결</li>
+        <li>긍정, 부정, 중립 분류</li>
+        <li>사람의 최종 판단 유지</li>
+      </ul>
+    </div>
+  </div>
+  <div class="button-row">
+    <a class="link-button" href="stock-dashboard.html" target="_blank">실제 대시보드 보기</a>
+  </div>
+</section>
+
+<section>
+  <div class="label">Project 02</div>
+  <h2>AI Wellness Coach 기획</h2>
+  <p>식단 관리는 사진을 분석하는 기능을 넘어, 기본 신체 정보와 운동·수면 데이터를 함께 보고 매일의 컨디션과 다음 행동을 제안하는 개인 건강 운영 에이전트로 발전시킨다. 현재는 초안 웹앱을 붙여두고, 이후 사진 분석과 주간 리포트로 확장한다.</p>
+  <div class="flow">
+    <div class="flow-step"><span>Step 1</span><p>프로필 입력</p></div>
+    <div class="flow-step"><span>Step 2</span><p>식사 사진 기록</p></div>
+    <div class="flow-step"><span>Step 3</span><p>운동·수면 연결</p></div>
+    <div class="flow-step"><span>Step 4</span><p>다음 행동 제안</p></div>
+    <div class="flow-step"><span>Step 5</span><p>주간 리포트</p></div>
+  </div>
+  <div class="grid grid-3" style="margin-top:22px;">
+    <div class="card">
+      <h3 class="green">입력 데이터</h3>
+      <p>나이, 키, 몸무게, 목표, 활동량, 알레르기, 식사 사진, 운동, 수면 시간을 기록한다.</p>
+    </div>
+    <div class="card">
+      <h3 class="gold">AI 분석 역할</h3>
+      <p>칼로리, 탄단지, 수면 부족, 운동 후 회복 필요성, 과식/부족 패턴을 함께 추정한다.</p>
+    </div>
+    <div class="card dark-card">
+      <h3>안전 원칙</h3>
+      <p>의학적 진단이 아니라 건강 루틴 기록과 의사결정 보조로 운영하고, 질환 관련 판단은 전문가 상담으로 넘긴다.</p>
+    </div>
+  </div>
+  <div class="button-row">
+    <a class="link-button" href="wellness-coach.html" target="_blank">AI Wellness Coach 보기</a>
+  </div>
+</section>
+
+<section>
+  <div class="label">Company Projects</div>
+  <h2>회사 업무 리포트와 대시보드 기획</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <span class="tag tag-blue">Branch Report</span>
+      <h3>지사 관리 리포트</h3>
+      <ul>
+        <li>지사명, 담당자, 지역, 운영 상태</li>
+        <li>매출, 문의, 계약, 이슈, 요청사항</li>
+        <li>다음 액션과 승인 필요 항목</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-brown">Content Dashboard</span>
+      <h3>콘텐츠 업무 대시보드</h3>
+      <ul>
+        <li>발행 일정과 채널 관리</li>
+        <li>콘텐츠 성과와 반응 정리</li>
+        <li>다음 제작 우선순위 제안</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card dark-card" style="margin-top:20px;">
+    <h3>데이터가 준비되면 바로 만들 수 있는 것</h3>
+    <p>엑셀, 구글시트, 메모 형태로 지사별 항목과 콘텐츠 항목을 정리하면 웹 대시보드와 자동 리포트 형식으로 변환할 수 있다.</p>
+  </div>
+</section>
+
+<section>
+  <div class="label">Roadmap</div>
+  <h2>개발 로드맵</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <span class="tag tag-gold">Project 01</span>
+      <h3>주식 대시보드</h3>
+      <ul>
+        <li>보유 종목, 매입가, 현재가, 수익률을 안정적으로 관리한다.</li>
+        <li>필요 과정: 데이터 구조 확정, 시세 API 연결, 뉴스 수집, 지표 계산, 자동 업데이트.</li>
+        <li>연결 후보: Yahoo Finance, GitHub Actions, 뉴스 RSS/API, Google Sheets.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-green">Project 02</span>
+      <h3>AI Wellness Coach</h3>
+      <ul>
+        <li>식단, 운동, 수면 기록을 연결해 개인 건강 루틴을 관리한다.</li>
+        <li>필요 과정: 프로필 입력, 음식 사진 분석, 영양소 추정, 수면/운동 데이터 연결, 주간 리포트.</li>
+        <li>연결 후보: Vision API, Health 앱/Google Fit, 음식 영양 DB, Claude Code 에이전트.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag tag-blue">Project 03</span>
+      <h3>지사 / 콘텐츠</h3>
+      <ul>
+        <li>지사별 요청사항, 이슈, 콘텐츠 일정과 성과를 업무 대시보드로 정리한다.</li>
+        <li>필요 과정: 지사 데이터 템플릿, 콘텐츠 데이터 템플릿, 리포트 생성 규칙, 승인 플로우.</li>
+        <li>연결 후보: Google Sheets, Gmail, Calendar, Drive, Slack/Teams, Notion MCP.</li>
+      </ul>
+    </div>
+    <div class="card dark-card">
+      <span class="tag tag-red">Final System</span>
+      <h3>통합 AI Work OS</h3>
+      <ul>
+        <li>회사와 개인 업무를 분리하되, 매일의 실행은 한 화면에서 운영한다.</li>
+        <li>필요 과정: 프로젝트 허브, 데이터 분리, 자동화 로그, 인간 승인, 배포 구조 정리.</li>
+        <li>연결 후보: GitHub Pages, GitHub Actions, Claude Code, Google Workspace MCP, 외부 API.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:20px;">
+    <p><span class="bold">운영 원칙:</span> AI는 수집, 분류, 요약, 분석, 리포트 초안을 맡고 최종 실행과 민감한 결정은 사람이 승인한다.</p>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'fade',
+    center: true,
+    controls: true,
+    controlsLayout: 'edges',
+    progress: false,
+    slideNumber: 'c/t'
+  });
+
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.nav-tab'));
+
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      Reveal.slide(parseInt(tab.dataset.slide, 10));
+    });
+  });
+
+  Reveal.on('ready', updateTabs);
+  Reveal.on('slidechanged', updateTabs);
+
+  function updateTabs() {
+    var idx = Reveal.getIndices().h;
+    var active = 0;
+    tabs.forEach(function(tab, i) {
+      var start = parseInt(tab.dataset.slide, 10);
+      var next = tabs[i + 1] ? parseInt(tabs[i + 1].dataset.slide, 10) : 999;
+      if (idx >= start && idx < next) active = i;
+      tab.classList.remove('active');
+    });
+    tabs[active].classList.add('active');
+  }
+</script>
+</body>
+</html>
