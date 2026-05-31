@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>샐러드마스터 고객 인식 분석 대시보드</title>
+  <style>
+    :root {
+      --ink: #1f2528;
+      --muted: #667076;
+      --line: #dde4e2;
+      --paper: #ffffff;
+      --wash: #f5f7f4;
+      --deep: #153f46;
+      --teal: #1d8b83;
+      --gold: #c6902f;
+      --rust: #b95738;
+      --blue: #2f6f9f;
+      --shadow: 0 10px 30px rgba(31, 37, 40, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--wash);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+    a { color: var(--deep); font-weight: 700; text-decoration: none; }
+    header {
+      background: linear-gradient(115deg, rgba(21, 63, 70, 0.96), rgba(29, 139, 131, 0.88)), url("https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1800&q=82");
+      background-position: center;
+      background-size: cover;
+      color: white;
+      padding: 44px 40px 34px;
+    }
+    .header-inner, main { max-width: 1180px; margin: 0 auto; }
+    .eyebrow { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; margin: 0 0 14px; opacity: 0.88; text-transform: uppercase; }
+    h1 { font-size: clamp(32px, 4.8vw, 56px); letter-spacing: 0; line-height: 1.08; margin: 0; max-width: 820px; }
+    .lead { font-size: 18px; max-width: 780px; margin: 18px 0 0; opacity: 0.93; }
+    main { padding: 28px 24px 56px; }
+    .kpis { display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: -56px; }
+    .kpi, section {
+      background: var(--paper);
+      border: 1px solid rgba(221, 228, 226, 0.86);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .kpi { min-height: 118px; padding: 18px; }
+    .kpi span { color: var(--muted); display: block; font-size: 13px; font-weight: 700; }
+    .kpi strong { display: block; font-size: 36px; letter-spacing: 0; line-height: 1; margin-top: 16px; }
+    .kpi small { color: var(--muted); display: block; margin-top: 8px; }
+    .grid { display: grid; gap: 18px; grid-template-columns: 1.15fr 0.85fr; margin-top: 18px; }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    section { padding: 22px; }
+    h2 { font-size: 20px; letter-spacing: 0; line-height: 1.25; margin: 0 0 6px; }
+    .note { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+    .bar-row { margin: 14px 0; }
+    .bar-meta { align-items: center; display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+    .bar-track { background: #edf1ef; border-radius: 999px; height: 11px; margin-top: 7px; overflow: hidden; }
+    .bar-fill { background: linear-gradient(90deg, var(--teal), var(--gold)); border-radius: inherit; height: 100%; min-width: 8px; }
+    .keywords { align-content: start; display: flex; flex-wrap: wrap; gap: 10px; }
+    .keyword { background: #f0f4f1; border: 1px solid #dce6df; border-radius: 999px; color: var(--deep); display: inline-flex; gap: 6px; padding: 7px 11px; }
+    .keyword b { color: var(--gold); font-size: 0.75em; }
+    .insight-map { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .insight { border-left: 4px solid var(--teal); background: #f8faf8; border-radius: 6px; padding: 14px; }
+    .insight:nth-child(2) { border-left-color: var(--rust); }
+    .insight:nth-child(3) { border-left-color: var(--gold); }
+    .insight:nth-child(4) { border-left-color: var(--blue); }
+    .insight h3 { font-size: 15px; margin: 0 0 8px; }
+    .insight p { color: var(--muted); font-size: 14px; margin: 0; }
+    .filters { align-items: end; display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 16px; }
+    label { color: var(--muted); display: grid; font-size: 12px; font-weight: 800; gap: 6px; }
+    select, input {
+      appearance: none;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      font: inherit;
+      min-height: 40px;
+      padding: 8px 10px;
+      width: 100%;
+    }
+    .records { display: grid; gap: 12px; }
+    .record { border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+    .record[hidden] { display: none; }
+    .record-top { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .record-index { color: var(--muted); font-size: 12px; font-weight: 800; }
+    .pill { background: rgba(29, 139, 131, 0.12); border-radius: 999px; color: var(--deep); font-size: 12px; font-weight: 800; padding: 4px 8px; }
+    .pill.soft { background: #f3efe5; color: #75551d; }
+    .record h3 { font-size: 17px; margin: 0 0 8px; }
+    .record p { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+    .method { display: grid; gap: 12px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .step { background: #f8faf8; border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+    .step strong { display: block; margin-bottom: 6px; }
+    .step span { color: var(--muted); font-size: 13px; }
+    .empty { color: var(--muted); }
+    footer { color: var(--muted); font-size: 13px; margin-top: 22px; text-align: right; }
+    @media (max-width: 900px) {
+      header { padding: 34px 22px 78px; }
+      .kpis, .grid, .grid.three, .filters, .method, .insight-map { grid-template-columns: 1fr; }
+      .kpis { margin-top: -72px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <p class="eyebrow">Customer Perception Mining Pilot</p>
+      <h1>샐러드마스터 온라인 고객 인식 분석 대시보드</h1>
+      <p class="lead">최근 10년 범위의 공개 웹 문서를 수집해 콘텐츠 유형, 감성, 토픽, 주요 키워드를 탐색하는 파일럿 리포트입니다. 현재 결과는 분석 체계 검증용이며, 고객 인식 결론은 네이버·유튜브·인스타그램·공공데이터 확장 후 확정하는 것이 안전합니다.</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="kpis">
+      <div class="kpi"><span>수집 문서</span><strong>9</strong><small>시드 URL 기반 파일럿</small></div>
+      <div class="kpi"><span>분석 포함 문서</span><strong>5</strong><small>후기/정보성 중심</small></div>
+      <div class="kpi"><span>제외 문서</span><strong>4</strong><small>거래/채용/무관 문서</small></div>
+      <div class="kpi"><span>주요 신호</span><strong>건강 조리</strong><small>현재 표본 기준</small></div>
+    </div>
+
+    <div class="grid">
+      <section>
+        <h2>인식 구조 요약</h2>
+        <p class="note">파일럿에서 확인된 해석 프레임입니다. 데이터가 늘어나면 LLM 분류 결과로 자동 갱신하는 구조가 적합합니다.</p>
+        <div class="insight-map">
+          <div class="insight"><h3>긍정 인식</h3><p>건강 조리, 무수/저수 조리, 오래 쓰는 프리미엄 조리도구 이미지가 반복됩니다.</p></div>
+          <div class="insight"><h3>구매 장벽</h3><p>고가 제품, 방문 상담 방식, 실제 사용자 후기 부족이 구매 전 검증 포인트가 됩니다.</p></div>
+          <div class="insight"><h3>신뢰 리스크</h3><p>홍보/정보성 콘텐츠 비중이 높으면 소비자 목소리와 판매자 목소리가 섞일 위험이 있습니다.</p></div>
+          <div class="insight"><h3>마케팅 기회</h3><p>가격 납득, AS/보증, 실제 사용 장면, 경쟁 브랜드 비교 콘텐츠가 필요합니다.</p></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>콘텐츠 유형</h2>
+        <p class="note">분석에 포함할 문서와 제외할 문서를 먼저 분리합니다.</p>
+        
+            <div class="bar-row " data-label="홍보/정보성">
+              <div class="bar-meta">
+                <span>홍보/정보성</span>
+                <strong>3</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:33%"></div></div>
+            </div>
+            
+
+            <div class="bar-row " data-label="커뮤니티 의견">
+              <div class="bar-meta">
+                <span>커뮤니티 의견</span>
+                <strong>2</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:22%"></div></div>
+            </div>
+            
+
+            <div class="bar-row " data-label="중고/거래">
+              <div class="bar-meta">
+                <span>중고/거래</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:11%"></div></div>
+            </div>
+            
+
+            <div class="bar-row " data-label="구인/채용">
+              <div class="bar-meta">
+                <span>구인/채용</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:11%"></div></div>
+            </div>
+            
+
+            <div class="bar-row " data-label="사용처/사례">
+              <div class="bar-meta">
+                <span>사용처/사례</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:11%"></div></div>
+            </div>
+            
+
+            <div class="bar-row " data-label="검색/로컬집계">
+              <div class="bar-meta">
+                <span>검색/로컬집계</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:11%"></div></div>
+            </div>
+            
+      </section>
+    </div>
+
+    <div class="grid three">
+      <section>
+        <h2>감성 분포</h2>
+        <p class="note">분석 포함 문서 기준입니다.</p>
+        
+            <div class="bar-row sentiment" data-label="긍정">
+              <div class="bar-meta">
+                <span>긍정</span>
+                <strong>3</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:60%"></div></div>
+            </div>
+            
+
+            <div class="bar-row sentiment" data-label="혼합">
+              <div class="bar-meta">
+                <span>혼합</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:20%"></div></div>
+            </div>
+            
+
+            <div class="bar-row sentiment" data-label="부정">
+              <div class="bar-meta">
+                <span>부정</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:20%"></div></div>
+            </div>
+            
+      </section>
+      <section>
+        <h2>토픽 분포</h2>
+        <p class="note">규칙 기반 1차 분류입니다.</p>
+        
+            <div class="bar-row topic" data-label="건강 조리">
+              <div class="bar-meta">
+                <span>건강 조리</span>
+                <strong>2</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:40%"></div></div>
+            </div>
+            
+
+            <div class="bar-row topic" data-label="사용 경험">
+              <div class="bar-meta">
+                <span>사용 경험</span>
+                <strong>2</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:40%"></div></div>
+            </div>
+            
+
+            <div class="bar-row topic" data-label="가격 부담">
+              <div class="bar-meta">
+                <span>가격 부담</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:20%"></div></div>
+            </div>
+            
+      </section>
+      <section>
+        <h2>홍보성 가능성</h2>
+        <p class="note">전체 수집 문서 기준입니다.</p>
+        
+            <div class="bar-row promo" data-label="높음">
+              <div class="bar-meta">
+                <span>높음</span>
+                <strong>8</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:89%"></div></div>
+            </div>
+            
+
+            <div class="bar-row promo" data-label="낮음">
+              <div class="bar-meta">
+                <span>낮음</span>
+                <strong>1</strong>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:11%"></div></div>
+            </div>
+            
+      </section>
+    </div>
+
+    <section style="margin-top:18px">
+      <h2>상위 키워드</h2>
+      <p class="note">검색/메뉴성 노이즈를 일부 제거한 분석 포함 문서 기준입니다.</p>
+      <div class="keywords"><span class="keyword" style="font-size:24px">냄비 <b>27</b></span>
+<span class="keyword" style="font-size:20px">코리아 <b>18</b></span>
+<span class="keyword" style="font-size:20px">가격 <b>18</b></span>
+<span class="keyword" style="font-size:19px">세트 <b>15</b></span>
+<span class="keyword" style="font-size:18px">요리 <b>14</b></span>
+<span class="keyword" style="font-size:17px">건강한 <b>12</b></span>
+<span class="keyword" style="font-size:17px">있는 <b>11</b></span>
+<span class="keyword" style="font-size:17px">가격이 <b>11</b></span>
+<span class="keyword" style="font-size:16px">조리 <b>10</b></span>
+<span class="keyword" style="font-size:16px">구성 <b>10</b></span>
+<span class="keyword" style="font-size:16px">이렇게 <b>9</b></span>
+<span class="keyword" style="font-size:16px">그냥 <b>9</b></span>
+<span class="keyword" style="font-size:16px">샐마 <b>9</b></span>
+<span class="keyword" style="font-size:16px">관리 <b>8</b></span>
+<span class="keyword" style="font-size:16px">바로 <b>8</b></span>
+<span class="keyword" style="font-size:16px">냄비는 <b>8</b></span>
+<span class="keyword" style="font-size:16px">직접 <b>8</b></span>
+<span class="keyword" style="font-size:16px">차단 <b>8</b></span>
+<span class="keyword" style="font-size:15px">브랜드 <b>7</b></span>
+<span class="keyword" style="font-size:15px">평생 <b>7</b></span>
+<span class="keyword" style="font-size:15px">공식 <b>7</b></span>
+<span class="keyword" style="font-size:15px">cooking <b>7</b></span>
+<span class="keyword" style="font-size:15px">냄비가 <b>7</b></span>
+<span class="keyword" style="font-size:15px">2025년 <b>7</b></span>
+<span class="keyword" style="font-size:15px">판매 <b>7</b></span>
+<span class="keyword" style="font-size:15px">가치 <b>7</b></span>
+<span class="keyword" style="font-size:15px">그렇게 <b>7</b></span>
+<span class="keyword" style="font-size:15px">서정희 <b>7</b></span>
+<span class="keyword" style="font-size:15px">근데 <b>7</b></span>
+<span class="keyword" style="font-size:15px">원래 <b>7</b></span></div>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2>원문 탐색</h2>
+      <p class="note">콘텐츠 유형, 감성, 토픽으로 필터링하며 분류 결과와 원문 링크를 확인합니다.</p>
+      <div class="filters">
+        <label>콘텐츠 유형<select id="typeFilter"><option value="">전체</option><option value="검색/로컬집계">검색/로컬집계</option>
+<option value="구인/채용">구인/채용</option>
+<option value="사용처/사례">사용처/사례</option>
+<option value="중고/거래">중고/거래</option>
+<option value="커뮤니티 의견">커뮤니티 의견</option>
+<option value="홍보/정보성">홍보/정보성</option></select></label>
+        <label>감성<select id="sentimentFilter"><option value="">전체</option><option value="긍정">긍정</option>
+<option value="부정">부정</option>
+<option value="중립">중립</option>
+<option value="혼합">혼합</option></select></label>
+        <label>토픽<select id="topicFilter"><option value="">전체</option><option value="가격 부담">가격 부담</option>
+<option value="건강 조리">건강 조리</option>
+<option value="사용 경험">사용 경험</option></select></label>
+        <label>검색<input id="searchBox" type="search" placeholder="제목/본문 검색"></label>
+      </div>
+      <div class="records" id="records">
+        
+            <article class="record" data-type="홍보/정보성" data-sentiment="긍정" data-topic="건강 조리">
+              <div class="record-top">
+                <span class="record-index">#1</span>
+                <span class="pill">홍보/정보성</span>
+                <span class="pill soft">긍정</span>
+                <span class="pill soft">건강 조리</span>
+              </div>
+              <h3>연예인 주방템, 샐러드마스터 냄비 - 건강을 위한 발걸음</h3>
+              <p>연예인 주방템, 샐러드마스터 냄비 - 건강을 위한 발걸음 콘텐츠로 건너뛰기 건강 메뉴 토글 약물 인체 질환 치료 해부학 및 생리학 자연 치유법 메뉴 토글 기타 관리법 머릿결 관리 몸 관리 약용 식물 얼굴 관리 자연 치료 자연요법 웰니스 메뉴 토글 건강한 습관 건강한 정신 뷰티 및 미용 관리 운동과 스포츠 식단 메뉴 토글 건강한 식단 디톡스 식단 체중 감량 레시피 메뉴 토글 건강한 레시피 글루텐프리 디저트 베지테리언과 비건 애피타이저 및 메인 요리 주스와 스무디…</p>
+              <a href="https://steptohealth.co.kr/%EC%97%B0%EC%98%88%EC%9D%B8-%EC%A3%BC%EB%B0%A9%ED%85%9C-%EC%83%90%EB%9F%AC%EB%93%9C%EB%A7%88%EC%8A%A4%ED%84%B0-%EB%83%84%EB%B9%84/" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="홍보/정보성" data-sentiment="긍정" data-topic="사용 경험">
+              <div class="record-top">
+                <span class="record-index">#2</span>
+                <span class="pill">홍보/정보성</span>
+                <span class="pill soft">긍정</span>
+                <span class="pill soft">사용 경험</span>
+              </div>
+              <h3>냄비계의 에르메스 ? 샐러드마스터 냄비, 건강한 요리의 혁신 - pami1001.com</h3>
+              <p>냄비계의 에르메스 ? 샐러드마스터 냄비, 건강한 요리의 혁신 - pami1001.com Skip to content pami1001.com Sample Page 검색 Main Menu Posted in 생활정보 냄비계의 에르메스 ? 샐러드마스터 냄비, 건강한 요리의 혁신 by pami 06/29/2025 06/27/2025 최근 각종 SNS와 유튜브, 블로그를 통해 샐러드마스터(Saladmaster) 냄비 에 대한 관심이 뜨겁습니다. 수백만 원에 달하는 고가의…</p>
+              <a href="https://pami1001.com/%EB%83%84%EB%B9%84%EA%B3%84%EC%9D%98-%EC%97%90%EB%A5%B4%EB%A9%94%EC%8A%A4-%EC%83%90%EB%9F%AC%EB%93%9C%EB%A7%88%EC%8A%A4%ED%84%B0-%EB%83%84%EB%B9%84-%EA%B1%B4%EA%B0%95%ED%95%9C-%EC%9A%94%EB%A6%AC/" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="홍보/정보성" data-sentiment="혼합" data-topic="가격 부담">
+              <div class="record-top">
+                <span class="record-index">#3</span>
+                <span class="pill">홍보/정보성</span>
+                <span class="pill soft">혼합</span>
+                <span class="pill soft">가격 부담</span>
+              </div>
+              <h3>샐러드마스터 코리아 세트 가격 확인하기 - jubisangsa.com</h3>
+              <p>샐러드마스터 코리아 세트 가격 확인하기 - jubisangsa.com 컨텐츠로 건너뛰기 Menu Home About Contact 샐러드마스터 코리아 세트 가격 확인하기 2월 3, 2026 10월 22, 2025 작성자 Lovelyjudyya 샐러드마스터 코리아 세트 가격 확인하기 2 샐러드마스터 코리아 세트 가격 분석 프로모션 Table of Contents Toggle 샐러드마스터 코리아 세트 가격 분석 프로모션 왜 이렇게 가격이 나올까? 구성과 가치 중심…</p>
+              <a href="https://jubisangsa.com/%EC%83%90%EB%9F%AC%EB%93%9C%EB%A7%88%EC%8A%A4%ED%84%B0-%EC%BD%94%EB%A6%AC%EC%95%84-%EC%84%B8%ED%8A%B8-%EA%B0%80%EA%B2%A9-%ED%99%95%EC%9D%B8%ED%95%98%EA%B8%B0/" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="커뮤니티 의견" data-sentiment="긍정" data-topic="건강 조리">
+              <div class="record-top">
+                <span class="record-index">#4</span>
+                <span class="pill">커뮤니티 의견</span>
+                <span class="pill soft">긍정</span>
+                <span class="pill soft">건강 조리</span>
+              </div>
+              <h3>서정희라는데 전신사진은 처음 봤는데 무지 아담하네요 ::: 82cook.com 자유게시판</h3>
+              <p>서정희라는데 전신사진은 처음 봤는데 무지 아담하네요 ::: 82cook.com 자유게시판 — 서정희라는데 전신사진은 처음 봤는데 무지 아담하네요 82cook.com 자유게시판 82cook.com을 즐겨찾기에 추가 로그인 열기 목차 주메뉴 바로가기 컨텐츠 바로가기 검색 바로가기 로그인 바로가기 주메뉴 LIVING 리빙 살림돋보기 리빙데코 살림물음표 살림의기초 쇼핑정보 FOOD COOKING 푸드 앤 쿠킹 키친토크 뭘사다먹지? 요리물음표 식당에가보니 히트레시피 요리의기초 LIFE 라이…</p>
+              <a href="https://www.82cook.com/entiz/read.php?bn=15&amp;num=3140794" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="커뮤니티 의견" data-sentiment="부정" data-topic="사용 경험">
+              <div class="record-top">
+                <span class="record-index">#5</span>
+                <span class="pill">커뮤니티 의견</span>
+                <span class="pill soft">부정</span>
+                <span class="pill soft">사용 경험</span>
+              </div>
+              <h3>저한테 물건 팔려는 후배.. 손절 해야겠죠..?? : MLBPARK</h3>
+              <p>저한테 물건 팔려는 후배.. 손절 해야겠죠..?? : MLBPARK — 저한테 물건 팔려는 후배.. 손절 해야겠죠..?? MLBPARK 로그인 회원가입 스포츠동아 MLB타운 한국야구타운 BULLPEN 기록실 명문관 건의사항 라커룸 폰판기 운세 정치 야구 축구 해축 러닝/헬스 농구 NBA NFL 격투기 e스포츠 라면대학 유머/짤/펌 동물 여행 패션 영화 만화 음식 역사 과학 군사 자동차 IT 아이돌 방송/연예 코/주/부 고민상담 결혼/연애 정치 주번나/17+ 핫…</p>
+              <a href="https://mlbpark.donga.com/mp/b.php?b=bullpen&amp;id=202303090078817470&amp;m=view" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="중고/거래" data-sentiment="긍정" data-topic="사용 경험">
+              <div class="record-top">
+                <span class="record-index">#6</span>
+                <span class="pill">중고/거래</span>
+                <span class="pill soft">긍정</span>
+                <span class="pill soft">사용 경험</span>
+              </div>
+              <h3>샐러드마스터+냄비 중고거래 | 중고나라 - 안심되는 중고거래</h3>
+              <p>샐러드마스터+냄비 중고거래 | 중고나라 - 안심되는 중고거래 — 샐러드마스터+냄비 중고거래 중고나라 - 안심되는 중고거래 안전하고 간편하게 거래하기 앱에서 더 쉽고 빠르게 이용해보세요! 앱 다운로드 채팅하기 판매하기 마이 카테고리 수입명품 패션의류 패션잡화 뷰티 출산/유아동 모바일/태블릿 가전제품 노트북/PC 카메라/캠코더 가구/인테리어 리빙/생활 게임 반려동물/취미 도서/음반/문구 티켓/쿠폰 스포츠 레저/여행 중고차 오토바이 공구/산업용품 무료나눔 여…</p>
+              <a href="https://web.joongna.com/search/%EC%83%90%EB%9F%AC%EB%93%9C%EB%A7%88%EC%8A%A4%ED%84%B0%2B%EB%83%84%EB%B9%84" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="구인/채용" data-sentiment="중립" data-topic="사용 경험">
+              <div class="record-top">
+                <span class="record-index">#7</span>
+                <span class="pill">구인/채용</span>
+                <span class="pill soft">중립</span>
+                <span class="pill soft">사용 경험</span>
+              </div>
+              <h3>샐러드마스터 주방보조알바 구인(미사역) | 샐러드마스터 썬지사 | 망월동 | 당근 알바</h3>
+              <p>샐러드마스터 주방보조알바 구인(미사역) | 샐러드마스터 썬지사 | 망월동 | 당근 알바 — 샐러드마스터 주방보조알바 구인(미사역) 샐러드마스터 썬지사 망월동 당근 알바 본문 바로가기 중고거래 부동산 중고차 알바/과외/레슨 동네업체 동네생활 모임 카페 검색 앱 다운로드 검색 알바 샐러드마스터 주방보조알바 구인(미사역) 써니깡 경기 하남시 망월동 37.6 C 매너온도 모범 구인자 후기 9 샐러드마스터 주방보조알바 구인(미사역) 샐러드마스터 썬지사 작성 상세 정보 시급 1만 30원 경…</p>
+              <a href="https://www.daangn.com/kr/jobs/%EC%83%90%EB%9F%AC%EB%93%9C%EB%A7%88%EC%8A%A4%ED%84%B0-%EC%A3%BC%EB%B0%A9%EB%B3%B4%EC%A1%B0%EC%95%8C%EB%B0%94-%EA%B5%AC%EC%9D%B8-%EB%AF%B8%EC%82%AC%EC%97%AD-cmi63z7vvzpy" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="사용처/사례" data-sentiment="긍정" data-topic="건강 조리">
+              <div class="record-top">
+                <span class="record-index">#8</span>
+                <span class="pill">사용처/사례</span>
+                <span class="pill soft">긍정</span>
+                <span class="pill soft">건강 조리</span>
+              </div>
+              <h3>케이미래의원</h3>
+              <p>케이미래의원 1일 동안 보지 않음 닫기 알림 뒤로 알림 설정 뒤로 더보기 게시물 알림 내 글 반응 내가 작성한 게시물이나 댓글에 다른 사람이 댓글이나 답글을 작성하면 알려줍니다. 공지사항 사이트에서 보내는 중요한 공지를 실시간으로 알려줍니다. Alarm 마이페이지 로그아웃 로그인이 필요합니다. 로그인 의원소개 재생의학이란 진료철학 의료진 진료과목 간 신장 대사 면역질환 첨단치료 고압산소치료 양자치료 양자진단 및 치료 광양자치료 양자찜질방 고주파온열치료 프리모테…</p>
+              <a href="https://k-future.co.kr/110" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+
+            <article class="record" data-type="검색/로컬집계" data-sentiment="긍정" data-topic="가격 부담">
+              <div class="record-top">
+                <span class="record-index">#9</span>
+                <span class="pill">검색/로컬집계</span>
+                <span class="pill soft">긍정</span>
+                <span class="pill soft">가격 부담</span>
+              </div>
+              <h3>[전주시 완산구 효자동3가] 샐러드마스터 | 맛집 | 업체창고</h3>
+              <p>[전주시 완산구 효자동3가] 샐러드마스터 | 맛집 | 업체창고 — 전주시 완산구 효자동3가 샐러드마스터 맛집 업체창고 업체창고 동네에 꼭 필요한 곳 현재 동네 위치 확인 중... 우리동네 내 동네 설정하기 위치를 설정하고 우리 동네 소식을 확인하세요 이야기 동네 소식 자유 수다 동네 궁금증 동네 기록부 비지니스 점포 매매 내 공간 내 단골창고 내 발자국 마이페이지 전체 홈 기업창고 책창고 이용약관 개인정보 2005 2026 udanax.org 내 동네 선…</p>
+              <a href="https://place.udanax.org/place.php?id=623854&amp;placeName=%EC%83%90%EB%9F%AC%EB%93%9C%EB%A7%88%EC%8A%A4%ED%84%B0" target="_blank" rel="noopener">원문 열기</a>
+            </article>
+            
+      </div>
+    </section>
+
+    <section style="margin-top:18px">
+      <h2>AI 에이전트 운영 흐름</h2>
+      <p class="note">데이터 확장 시 병렬로 운영하기 좋은 역할 분담입니다.</p>
+      <div class="method">
+        <div class="step"><strong>Crawler</strong><span>공개 URL, 검색어, 채널별 수집 가능성 점검</span></div>
+        <div class="step"><strong>Cleaner</strong><span>중복, 노이즈, 홍보성 콘텐츠 분리</span></div>
+        <div class="step"><strong>Mining</strong><span>키워드, 감성, 토픽, 연관어 분석</span></div>
+        <div class="step"><strong>Insight</strong><span>구매 장벽, 만족 요인, 신뢰 리스크 구조화</span></div>
+        <div class="step"><strong>QA</strong><span>원문 샘플 검수와 분류 품질 보정</span></div>
+      </div>
+    </section>
+
+    <footer>Generated 2026-05-11T17:48:13 · Source: saladmaster_analyzed.csv</footer>
+  </main>
+
+  <script>
+    const filters = {
+      type: document.getElementById("typeFilter"),
+      sentiment: document.getElementById("sentimentFilter"),
+      topic: document.getElementById("topicFilter"),
+      search: document.getElementById("searchBox")
+    };
+    const records = Array.from(document.querySelectorAll(".record"));
+    function applyFilters() {
+      const query = filters.search.value.trim().toLowerCase();
+      records.forEach((record) => {
+        const matchesType = !filters.type.value || record.dataset.type === filters.type.value;
+        const matchesSentiment = !filters.sentiment.value || record.dataset.sentiment === filters.sentiment.value;
+        const matchesTopic = !filters.topic.value || record.dataset.topic === filters.topic.value;
+        const matchesQuery = !query || record.innerText.toLowerCase().includes(query);
+        record.hidden = !(matchesType && matchesSentiment && matchesTopic && matchesQuery);
+      });
+    }
+    Object.values(filters).forEach((input) => input.addEventListener("input", applyFilters));
+  </script>
+</body>
+</html>
