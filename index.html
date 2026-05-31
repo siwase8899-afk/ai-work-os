@@ -237,6 +237,12 @@
   }
   .project-card[href]:hover { border-color: rgba(138, 95, 61, 0.38); transform: translateY(-1px); }
   .project-meta { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
+  .link-hint {
+    color: var(--accent);
+    font-size: 0.4em;
+    font-weight: 820;
+    margin-top: auto;
+  }
   .status {
     border-radius: 999px;
     color: var(--muted);
@@ -549,11 +555,12 @@
       <h3>예약앱 / 결제앱 MVP</h3>
       <p>바이브 코딩으로 업무용 앱을 빠르게 만들고 실제 적용 가능성을 검증한다.</p>
     </div>
-    <div class="card project-card">
+    <a class="card project-card" href="assets/hermers-agent-ai-assistant.png" target="_blank">
       <div class="project-meta"><span class="tag tag-red">Personal</span><span class="status status-use">운영 중</span></div>
       <h3>OPEACLAW / HERMERS 봇</h3>
       <p>OPEACLAW(오픈클로)는 감정 기록을, HERMERS(에르메스)는 반복 알림, 외국어, 주식, 문화 정보, 가계부 루틴을 운영한다.</p>
-    </div>
+      <span class="link-hint">운영 화면 보기</span>
+    </a>
     <div class="card project-card">
       <div class="project-meta"><span class="tag tag-gold">Branding</span><span class="status status-plan">기획</span></div>
       <h3>4050 여성 수면 관리 앱</h3>
